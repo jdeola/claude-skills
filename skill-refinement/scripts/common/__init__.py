@@ -21,6 +21,8 @@ from .persistence import (
     RefinementPersistence,
     ensure_user_refinements_dir,
     get_refinement_id,
+    get_pattern_id,
+    USER_REFINEMENTS_DIR,
 )
 
 __all__ = [
@@ -38,4 +40,6 @@ __all__ = [
     "RefinementPersistence",
     "ensure_user_refinements_dir",
     "get_refinement_id",
+    "get_pattern_id",
+    "USER_REFINEMENTS_DIR",
 ]

@@ -51,39 +51,70 @@ Auto-detected:
 
 ### Step 2: Gather Context (Automated)
 
-**Sources to query:**
+**Implementation:** `scripts/gather_context.py`
 
-1. **Session Context**
-   - Recent tool calls (last 50)
-   - Files touched this session
-   - Errors encountered
+```bash
+# CLI usage
+python scripts/gather_context.py --skill context-engineering
 
-2. **Skill Context**
-   - Current skill configuration
-   - Existing overrides in project
+# List available skills
+python scripts/gather_context.py --list-skills
+
+# JSON output for programmatic use
+python scripts/gather_context.py --skill context-engineering --json
+```
+
+**Sources queried:**
+
+1. **Git Context** (always available)
+   - Current status and diff
+   - Recent commits (last 10)
+   - Changed files
+
+2. **Skill Context** (always available)
+   - Current skill configuration (project + user scope)
+   - Existing overrides in `.claude/skills/[skill]/`
    - Skill file structure
 
-3. **Git Context**
-   - Current status and diff
-   - Recent commits
+3. **Pattern Context** (from `~/.claude/skill-refinements/`)
+   - Similar past refinements for this skill
+   - Matching patterns in aggregated-patterns.md
 
-4. **Pattern Context**
-   - Similar past refinements
-   - Matching patterns in history
+4. **Session Context** (when MCP available)
+   - Recent tool calls via Desktop Commander
+   - Files touched this session
 
-5. **MCP Context** (if available)
-   - Zen MCP memories
-   - Sentry errors
-   - Cross-project patterns
+5. **Error Context** (when Sentry MCP available)
+   - Recent errors for this project
+   - Related stack traces
+
+6. **Cross-Project Context** (when Zen MCP available)
+   - Patterns from other projects
+   - Saved memories and context
 
 **Output:**
 ```
-📋 Context Gathered:
-   • Tool calls: [N] recent operations
-   • Files touched: [list]
-   • Errors: [N] encountered
-   • Similar refinements: [N] found
-   • Pattern matches: [list or "none"]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Context Gathered
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Target Skill: context-engineering
+📁 Project: vba-lms-app
+📍 Root: /Users/james/projects/vba-lms-app
+
+📊 Git Status: 5 changed files
+📝 Recent Commits: 10
+📄 Files Touched: 5
+🔧 Skill Files: 8
+🔍 Similar Refinements: 2
+🎯 Pattern Matches: PATTERN-001: Test Directory Exclusion
+
+🔌 MCP Status:
+   Desktop Commander: not available
+   Sentry: not available
+   Zen: not available
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
