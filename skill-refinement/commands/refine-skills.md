@@ -1,0 +1,361 @@
+# /refine-skills Command
+
+> Capture and apply skill refinements with semi-automated analysis
+
+---
+
+## Trigger Patterns
+
+```
+Primary:
+/refine-skills, /refine-skill, /skill-refine
+
+Auto-detected:
+"skill doesn't work", "skill should have", "missing trigger"
+"should have caught", "why didn't skill", "skill broke"
+"improve skill", "extend skill", "add to skill"
+"skill missed", "false positive", "false negative"
+```
+
+---
+
+## Workflow
+
+### Step 1: Identify Target
+
+**Questions to resolve:**
+
+1. **Which skill needs refinement?**
+   - Auto-detect from recent context
+   - User can specify explicitly
+   - List available skills if unclear
+
+2. **What category?**
+   - `trigger` - When skill activates
+   - `content` - What skill does/outputs
+   - `hook` - Automation behavior
+   - `tool` - MCP/tool integration
+   - `pattern` - Detection/validation logic
+   - `config` - Settings/options
+   - `new` - Capability doesn't exist yet
+
+**Output:**
+```
+🎯 Target Identified:
+   Skill: [skill-name]
+   Category: [category]
+   Confidence: [high|medium|low]
+```
+
+---
+
+### Step 2: Gather Context (Automated)
+
+**Sources to query:**
+
+1. **Session Context**
+   - Recent tool calls (last 50)
+   - Files touched this session
+   - Errors encountered
+
+2. **Skill Context**
+   - Current skill configuration
+   - Existing overrides in project
+   - Skill file structure
+
+3. **Git Context**
+   - Current status and diff
+   - Recent commits
+
+4. **Pattern Context**
+   - Similar past refinements
+   - Matching patterns in history
+
+5. **MCP Context** (if available)
+   - Zen MCP memories
+   - Sentry errors
+   - Cross-project patterns
+
+**Output:**
+```
+📋 Context Gathered:
+   • Tool calls: [N] recent operations
+   • Files touched: [list]
+   • Errors: [N] encountered
+   • Similar refinements: [N] found
+   • Pattern matches: [list or "none"]
+```
+
+---
+
+### Step 3: Capture User Insight
+
+**Questions to ask:**
+
+1. **What behavior did you expect?**
+   > Describe what should have happened
+
+2. **What actually happened?**
+   > Describe the actual behavior
+
+3. **Can you provide a specific example?**
+   > Command, file, or scenario that demonstrates the issue
+
+4. **What's the desired outcome?**
+   > What should happen after the refinement
+
+**Guided Mode (triggered when):**
+- Confidence < 70%
+- Multiple valid approaches detected
+- Cross-skill impact identified
+- Unclear user intent
+
+**Guided Mode provides:**
+- Clarifying questions
+- Example suggestions from similar refinements
+- Option previews
+
+---
+
+### Step 4: Analyze & Propose
+
+**Analysis steps:**
+
+1. **Root Cause Identification**
+   - Compare expected vs actual
+   - Trace through skill logic
+   - Identify gap location
+
+2. **Override Type Selection**
+   | Scenario | Recommended Type |
+   |----------|-----------------|
+   | Small section change | `patch` |
+   | Adding new trigger/pattern | `extend` |
+   | Environment-specific value | `config` |
+   | Hook logic change | `hook` |
+   | Major rewrite needed | `full` |
+
+3. **Impact Assessment**
+   - Files affected
+   - Breaking changes
+   - Test implications
+
+4. **Generalization Potential**
+   - `high` - Likely applies to multiple projects
+   - `medium` - May apply elsewhere
+   - `low` - Project-specific
+
+**Output:**
+```
+📊 Analysis Complete:
+
+Root Cause:
+  [Description of why the issue occurs]
+
+Recommended Override:
+  Type: [patch|extend|config|hook|full]
+  Target: [specific file/section]
+
+Impact:
+  Files: [list of affected files]
+  Breaking: [yes/no with details]
+
+Generalization: [high|medium|low]
+  Reason: [why this rating]
+```
+
+---
+
+### Step 5: Generate & Preview Changes
+
+**For Section Patches:**
+
+```markdown
+## PATCH: [section-path]
+<!-- ACTION: [append|prepend|replace-section|insert-after|insert-before] "[marker]" -->
+[patch content]
+```
+
+**Preview Format:**
+```
+📄 Proposed Changes:
+
+┌─ .claude/skills/[skill]/SKILL.patch.md ─────────────
+│ ## PATCH: hooks/duplicate-check
+│ <!-- ACTION: insert-after "Only check paths" -->
+│
+│ + # Exclude test directories
+│ + EXCLUDE_PATTERNS="${EXCLUDE_PATTERNS:-__tests__|fixtures|__mocks__}"
+│ + if echo "$FILE_PATH" | grep -qE "($EXCLUDE_PATTERNS)"; then
+│ +   exit 0
+│ + fi
+└─────────────────────────────────────────────────────
+```
+
+---
+
+### Step 6: User Confirmation
+
+**Options presented:**
+
+1. **Apply as proposed** - Create files and log refinement
+2. **Modify before applying** - Edit the proposed changes
+3. **Apply to project only** - Skip user-scope logging
+4. **Cancel** - Abort refinement
+
+---
+
+### Step 7: Apply Refinement
+
+**Project Scope Actions:**
+1. Create `.claude/skills/[skill]/` directory if needed
+2. Write override file (patch, extend, config, etc.)
+3. Update project refinement log
+
+**User Scope Actions:**
+1. Generate refinement ID: `REF-YYYY-MMDD-NNN`
+2. Log to `~/.claude/skill-refinements/suggested-refinements.md`
+3. Create history entry in `refinement-history/`
+4. Update `aggregated-patterns.md`
+5. Check pattern count → trigger generalization if ≥2
+6. Sync to Zen MCP (if available)
+
+**Output:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Refinement Applied: REF-2024-1204-001
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Created:
+  .claude/skills/[skill]/SKILL.patch.md
+
+📝 Logged to:
+  ~/.claude/skill-refinements/suggested-refinements.md
+  ~/.claude/skill-refinements/refinement-history/[date]-[skill]-[type].md
+
+🔮 Pattern Tracking:
+  [New pattern created / Existing pattern updated]
+  Count: [N] occurrences
+  [Auto-generalization triggered / Threshold: N more needed]
+
+💡 Next Steps:
+  1. Test: [specific test scenario]
+  2. Verify the change works as expected
+  3. Run /done to validate before committing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## Examples
+
+### Example 1: Hook Modification
+
+```
+User: "The duplicate-check hook keeps blocking my test fixtures"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 Skill Refinement Detected
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Target Identified:
+   Skill: context-engineering
+   Category: hook
+   Confidence: high
+
+📋 Context Gathered:
+   • Tool calls: 47 recent operations
+   • Files touched: components/__tests__/fixtures/
+   • Errors: 3 blocked file creations
+   • Pattern matches: none (new pattern)
+
+📝 Capturing Issue:
+
+Expected: Test fixtures should be allowed
+Actual: Hook blocks any file matching component names
+Example: touch components/__tests__/fixtures/MockButton.tsx
+
+📊 Analysis:
+   Root cause: No exclusion for test directories
+   Override type: patch (hook modification)
+   Generalization: high (common pattern)
+
+Apply refinement? [yes/modify/cancel]
+```
+
+### Example 2: Trigger Addition
+
+```
+User: "The error-lifecycle skill should also trigger for 'performance issue'"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 Skill Refinement
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Target Identified:
+   Skill: error-lifecycle-management
+   Category: trigger
+   Confidence: high
+
+📊 Proposed:
+   Override type: extend
+   Action: Append to triggers section
+
+📄 Changes:
+┌─ .claude/skills/error-lifecycle-management/SKILL.extend.md ─
+│ ## EXTEND: triggers
+│ <!-- ACTION: append -->
+│ - "performance issue"
+│ - "slow response"
+│ - "latency problem"
+└─────────────────────────────────────────────────────────────
+
+Apply refinement? [yes/modify/cancel]
+```
+
+---
+
+## Error Handling
+
+### Skill Not Found
+```
+⚠️ Could not identify target skill
+
+Available skills:
+  • context-engineering
+  • error-lifecycle-management
+  • dev-flow-foundations
+
+Please specify: /refine-skills [skill-name]
+```
+
+### Ambiguous Category
+```
+⚠️ Multiple categories could apply
+
+This refinement could be:
+  1. trigger - Change when skill activates
+  2. content - Change what skill outputs
+
+Which category fits better? [1/2]
+```
+
+### Low Confidence
+```
+⚠️ Entering Guided Mode (confidence: 45%)
+
+I need more information to proceed:
+
+1. Can you show me the exact error or unexpected behavior?
+2. What file or command triggered this issue?
+3. Have you seen this in other projects?
+```
+
+---
+
+## Related Commands
+
+- `/apply-generalization` - Apply patterns to user-scope skills
+- `/review-patterns` - View tracked patterns
+- `/done` - Validate changes before committing
