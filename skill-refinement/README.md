@@ -52,7 +52,9 @@ claude-skills/skill-refinement/
 │   ├── refine-skills.md         # Main refinement command
 │   ├── apply-generalization.md  # Apply patterns to user-scope
 │   └── review-patterns.md       # Review tracked patterns
-├── hooks/                       # (Future: automation hooks)
+├── hooks/
+│   ├── refinement-detector.sh   # Detect refinement opportunities
+│   └── session-end.sh           # Post-session refinement prompt
 ├── scripts/
 │   ├── common/
 │   │   ├── __init__.py          # Package exports
@@ -61,7 +63,10 @@ claude-skills/skill-refinement/
 │   ├── gather_context.py        # Phase 2: Context gathering
 │   ├── analyze_gap.py           # Phase 3: Gap analysis
 │   ├── generate_patch.py        # Phase 3: Patch generation
-│   └── log_refinement.py        # Phase 1: Refinement logging
+│   ├── log_refinement.py        # Phase 1: Refinement logging
+│   ├── aggregate_patterns.py    # Phase 4: Pattern aggregation
+│   ├── apply_refinement.py      # Phase 4: Full workflow orchestration
+│   └── sync_zen.py              # Phase 5: Zen MCP integration
 ├── templates/
 │   ├── patch.md.template        # SKILL.patch.md template
 │   ├── refinement-entry.md.template
@@ -308,6 +313,144 @@ python scripts/log_refinement.py \
 --generalization high|medium|low (default: medium)
 --json          Output as JSON
 ```
+
+---
+
+### 5. Aggregate Patterns
+
+```bash
+# Process a refinement and update pattern tracking
+python scripts/aggregate_patterns.py \
+  --refinement-id REF-2024-1204-001
+
+# Check pattern status
+python scripts/aggregate_patterns.py \
+  --pattern-id PATTERN-001 \
+  --status
+
+# List all patterns ready for generalization
+python scripts/aggregate_patterns.py --list-ready
+```
+
+**Options:**
+```
+--refinement-id  Process specific refinement into patterns
+--pattern-id     Query specific pattern
+--status         Show pattern status and count
+--list-ready     List patterns at generalization threshold
+--json           Output as JSON
+```
+
+---
+
+### 6. Apply Refinement (Full Workflow)
+
+```bash
+# Apply a complete refinement workflow
+python scripts/apply_refinement.py \
+  --skill context-engineering \
+  --category hook \
+  --target hooks/duplicate-check \
+  --expected "Test fixtures should be allowed" \
+  --actual "Hook blocks all matching files" \
+  --patch-action insert-after \
+  --patch-marker "Only check paths" \
+  --patch-content "# Exclude test dirs"
+
+# Dry-run to preview without writing
+python scripts/apply_refinement.py \
+  --skill context-engineering \
+  --expected "..." --actual "..." \
+  --dry-run
+```
+
+**Options:**
+```
+--skill         Required. Target skill name
+--category      Category (auto-detected if not provided)
+--target        Target section path
+--expected      Required. Expected behavior
+--actual        Required. Actual behavior
+--example       Reproduction example
+--patch-action  append|prepend|replace-section|insert-after|insert-before
+--patch-marker  Marker text for positioned actions
+--patch-content Content of the patch
+--project       Project name (default: current directory name)
+--dry-run       Preview without writing files
+--json          Output as JSON
+```
+
+---
+
+### 7. Sync with Zen MCP
+
+```bash
+# Push local refinements to Zen MCP
+python scripts/sync_zen.py --push
+
+# Pull patterns from Zen MCP
+python scripts/sync_zen.py --pull
+
+# Bidirectional sync
+python scripts/sync_zen.py --sync
+
+# Query cross-project patterns
+python scripts/sync_zen.py --query "test directory exclusion"
+
+# Check sync status
+python scripts/sync_zen.py --status
+```
+
+**Options:**
+```
+--push          Push local changes to Zen MCP
+--pull          Pull remote patterns from Zen MCP
+--sync          Bidirectional synchronization
+--query         Query cross-project patterns
+--status        Show sync status and timestamps
+--force         Force sync even if recent
+--json          Output as JSON
+```
+
+## Automation Hooks
+
+### refinement-detector.sh
+
+Detects refinement opportunities from user prompts based on keyword matching.
+
+**Installation:**
+```json
+{
+  "hooks": {
+    "user_prompt_submit": "skill-refinement/hooks/refinement-detector.sh"
+  }
+}
+```
+
+**Detected Keywords:**
+- "skill doesn't work", "skill should have", "missing trigger"
+- "should have caught", "why didn't skill", "skill broke"
+- "improve skill", "extend skill", "add to skill"
+- "skill missed", "false positive", "false negative"
+
+### session-end.sh
+
+Prompts for refinements after significant sessions.
+
+**Installation:**
+```json
+{
+  "hooks": {
+    "session_end": "skill-refinement/hooks/session-end.sh"
+  }
+}
+```
+
+**Thresholds for Prompting:**
+- \> 20 tool calls
+- \> 0 errors encountered
+- \> 1 hour duration
+- \> 10 files modified
 
 ## MCP Integration
 
