@@ -3,6 +3,55 @@
 > **Version:** 1.0.0
 > **Purpose:** Capture, apply, and generalize skill refinements across projects
 > **Scope:** Standalone skill working across all Claude Skills
+> **Status:** Phase 3 Complete (Foundation, Context Gathering, Analysis & Patching)
+
+---
+
+## Quick Start
+
+### For Claude (Automatic)
+When a user mentions skill issues, trigger the refinement workflow:
+```
+User: "The duplicate-check hook keeps blocking my test fixtures"
+
+→ Run: gather_context.py --skill context-engineering
+→ Run: analyze_gap.py with user's expected/actual behavior
+→ Run: generate_patch.py to create the override
+→ Run: log_refinement.py to track the pattern
+```
+
+### For Users (Manual)
+```bash
+# List available skills
+python3 scripts/gather_context.py --list-skills
+
+# Gather context for a skill
+python3 scripts/gather_context.py --skill context-engineering
+
+# Analyze a gap
+python3 scripts/analyze_gap.py \
+  --skill context-engineering \
+  --category hook \
+  --target hooks/duplicate-check \
+  --expected "Test fixtures should be allowed" \
+  --actual "Hook blocks all matching files"
+
+# Generate a patch
+python3 scripts/generate_patch.py \
+  --skill context-engineering \
+  --section hooks/duplicate-check \
+  --action insert-after \
+  --marker "Only check paths" \
+  --content "# Exclude test dirs..." \
+  --write
+
+# Log the refinement
+python3 scripts/log_refinement.py \
+  --skill context-engineering \
+  --category hook \
+  --target hooks/duplicate-check \
+  --expected "..." --actual "..."
+```
 
 ---
 

@@ -55,10 +55,13 @@ claude-skills/skill-refinement/
 ├── hooks/                       # (Future: automation hooks)
 ├── scripts/
 │   ├── common/
-│   │   ├── __init__.py
-│   │   ├── models.py            # Data models
-│   │   └── persistence.py       # File + Zen MCP sync
-│   └── log_refinement.py        # CLI for logging refinements
+│   │   ├── __init__.py          # Package exports
+│   │   ├── models.py            # Data models (RefinementContext, GapAnalysis, etc.)
+│   │   └── persistence.py       # File persistence layer
+│   ├── gather_context.py        # Phase 2: Context gathering
+│   ├── analyze_gap.py           # Phase 3: Gap analysis
+│   ├── generate_patch.py        # Phase 3: Patch generation
+│   └── log_refinement.py        # Phase 1: Refinement logging
 ├── templates/
 │   ├── patch.md.template        # SKILL.patch.md template
 │   ├── refinement-entry.md.template
@@ -166,9 +169,120 @@ When a pattern appears in 2+ different projects, it's automatically flagged for 
 
 ## Script Usage
 
-### Log a Refinement (CLI)
+### 1. Gather Context
 
 ```bash
+# List available skills
+python scripts/gather_context.py --list-skills
+
+# Gather context for a specific skill
+python scripts/gather_context.py --skill context-engineering
+
+# JSON output for programmatic use
+python scripts/gather_context.py --skill context-engineering --json
+
+# Specify project root
+python scripts/gather_context.py --skill context-engineering --project-root /path/to/project
+```
+
+**Options:**
+```
+--skill         Target skill to gather context for
+--project-root  Project root path (default: current directory)
+--json          Output as JSON
+--list-skills   List available skills and exit
+```
+
+---
+
+### 2. Analyze Gap
+
+```bash
+# Analyze a gap with full details
+python scripts/analyze_gap.py \
+  --skill context-engineering \
+  --category hook \
+  --target hooks/duplicate-check \
+  --expected "Test fixtures should be allowed" \
+  --actual "Hook blocks all matching files"
+
+# With reproduction example
+python scripts/analyze_gap.py \
+  --skill context-engineering \
+  --expected "..." --actual "..." \
+  --example "touch components/__tests__/fixtures/MockButton.tsx"
+
+# Auto-detect category from keywords
+python scripts/analyze_gap.py \
+  --skill context-engineering \
+  --expected "Hook should allow test files" \
+  --actual "Hook blocks everything"
+
+# JSON output
+python scripts/analyze_gap.py --skill ... --expected ... --actual ... --json
+```
+
+**Options:**
+```
+--skill         Required. Target skill name
+--expected      Required. Expected behavior
+--actual        Required. Actual behavior
+--category      Category (auto-detected if not provided)
+--target        Target section path
+--example       Reproduction example
+--project-root  Project root path
+--json          Output as JSON
+```
+
+---
+
+### 3. Generate Patch
+
+```bash
+# Preview a patch (dry-run by default)
+python scripts/generate_patch.py \
+  --skill context-engineering \
+  --section hooks/duplicate-check \
+  --action insert-after \
+  --marker "Only check paths" \
+  --content "# Exclude test dirs"
+
+# Write the patch files
+python scripts/generate_patch.py \
+  --skill context-engineering \
+  --section hooks/duplicate-check \
+  --action append \
+  --content "New content here" \
+  --write
+
+# Delete a section
+python scripts/generate_patch.py \
+  --skill context-engineering \
+  --section old-section \
+  --action delete-section \
+  --marker "Section Name" \
+  --write
+```
+
+**Options:**
+```
+--skill         Required. Target skill name
+--section       Required. Target section path
+--action        Required. append|prepend|replace-section|insert-after|insert-before|delete-section
+--content       Content to insert (not needed for delete-section)
+--marker        Marker text for positioned actions
+--write         Write files (default: dry-run preview)
+--dry-run       Explicit dry-run mode
+--project-root  Project root path
+--json          Output as JSON
+```
+
+---
+
+### 4. Log Refinement
+
+```bash
+# Log a refinement to user-scope tracking
 python scripts/log_refinement.py \
   --skill context-engineering \
   --category hook \
@@ -179,8 +293,7 @@ python scripts/log_refinement.py \
   --project my-project
 ```
 
-### Options
-
+**Options:**
 ```
 --skill         Required. Target skill name
 --category      Required. trigger|content|hook|tool|pattern|config|new

@@ -150,12 +150,32 @@ python scripts/gather_context.py --skill context-engineering --json
 
 ### Step 4: Analyze & Propose
 
-**Analysis steps:**
+**Implementation:** `scripts/analyze_gap.py`
 
-1. **Root Cause Identification**
-   - Compare expected vs actual
-   - Trace through skill logic
-   - Identify gap location
+```bash
+# CLI usage
+python scripts/analyze_gap.py \
+  --skill context-engineering \
+  --category hook \
+  --target hooks/duplicate-check \
+  --expected "Test fixtures should be allowed" \
+  --actual "Hook blocks all matching files"
+
+# With example (for pattern matching)
+python scripts/analyze_gap.py \
+  --skill context-engineering \
+  --expected "..." --actual "..." \
+  --example "touch components/__tests__/fixtures/MockButton.tsx"
+
+# JSON output for programmatic use
+python scripts/analyze_gap.py --skill ... --expected ... --actual ... --json
+```
+
+**Analysis steps (automated):**
+
+1. **Category Detection** (if not specified)
+   - Analyzes keywords: "hook" → hook, "trigger" → trigger, etc.
+   - Falls back to content category if ambiguous
 
 2. **Override Type Selection**
    | Scenario | Recommended Type |
@@ -166,61 +186,106 @@ python scripts/gather_context.py --skill context-engineering --json
    | Hook logic change | `hook` |
    | Major rewrite needed | `full` |
 
-3. **Impact Assessment**
-   - Files affected
-   - Breaking changes
-   - Test implications
+3. **Confidence Scoring**
+   - Base: 0.5
+   - +0.2 if category explicitly provided
+   - +0.1 if target specified
+   - +0.1 if example provided
+   - **Guided mode triggers when < 0.7**
 
-4. **Generalization Potential**
-   - `high` - Likely applies to multiple projects
-   - `medium` - May apply elsewhere
-   - `low` - Project-specific
+4. **Generalization Assessment**
+   - `high` - Generic patterns (test exclusions, common configs)
+   - `medium` - Reusable but context-dependent
+   - `low` - Project-specific customizations
 
 **Output:**
 ```
-📊 Analysis Complete:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Gap Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Root Cause:
-  [Description of why the issue occurs]
+🎯 Target: context-engineering
+📋 Category: hook
+📍 Section: hooks/duplicate-check
 
-Recommended Override:
-  Type: [patch|extend|config|hook|full]
-  Target: [specific file/section]
+📝 Gap:
+   Expected: Test fixtures should be allowed
+   Actual: Hook blocks all matching files
 
-Impact:
-  Files: [list of affected files]
-  Breaking: [yes/no with details]
+📊 Analysis:
+   Override Type: hook
+   Confidence: 0.80 (high)
+   Generalization: high
 
-Generalization: [high|medium|low]
-  Reason: [why this rating]
+💡 Recommendation:
+   Create hook override to add test directory exclusion
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
 ### Step 5: Generate & Preview Changes
 
-**For Section Patches:**
+**Implementation:** `scripts/generate_patch.py`
 
-```markdown
-## PATCH: [section-path]
-<!-- ACTION: [append|prepend|replace-section|insert-after|insert-before] "[marker]" -->
-[patch content]
+```bash
+# Generate a patch with preview (dry-run by default)
+python scripts/generate_patch.py \
+  --skill context-engineering \
+  --section hooks/duplicate-check \
+  --action insert-after \
+  --marker "Only check paths" \
+  --content "# Exclude test dirs\nif [[ \$FILE =~ test ]]; then exit 0; fi"
+
+# Write the patch files
+python scripts/generate_patch.py \
+  --skill context-engineering \
+  --section hooks/duplicate-check \
+  --action insert-after \
+  --marker "Only check paths" \
+  --content "..." \
+  --write
+
+# Preview without writing (explicit)
+python scripts/generate_patch.py --skill ... --dry-run
 ```
+
+**Supported Patch Actions:**
+| Action | Syntax | Behavior |
+|--------|--------|----------|
+| `append` | `<!-- ACTION: append -->` | Add to end of section |
+| `prepend` | `<!-- ACTION: prepend -->` | Add to start of section |
+| `replace-section` | `<!-- ACTION: replace-section "NAME" -->` | Replace subsection |
+| `insert-after` | `<!-- ACTION: insert-after "MARKER" -->` | Insert after marker |
+| `insert-before` | `<!-- ACTION: insert-before "MARKER" -->` | Insert before marker |
+| `delete-section` | `<!-- ACTION: delete-section "NAME" -->` | Remove subsection |
 
 **Preview Format:**
 ```
-📄 Proposed Changes:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 Generated Patch
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-┌─ .claude/skills/[skill]/SKILL.patch.md ─────────────
-│ ## PATCH: hooks/duplicate-check
-│ <!-- ACTION: insert-after "Only check paths" -->
-│
+🎯 Skill: context-engineering
+📋 Section: hooks/duplicate-check
+⚙️ Action: insert-after
+🔍 Marker: "Only check paths"
+
+📄 Diff Preview:
+┌─────────────────────────────────────────────────────
+│   Only check paths
 │ + # Exclude test directories
 │ + EXCLUDE_PATTERNS="${EXCLUDE_PATTERNS:-__tests__|fixtures|__mocks__}"
 │ + if echo "$FILE_PATH" | grep -qE "($EXCLUDE_PATTERNS)"; then
 │ +   exit 0
 │ + fi
 └─────────────────────────────────────────────────────
+
+📁 Output: .claude/skills/context-engineering/SKILL.patch.md
+
+[DRY RUN - use --write to create files]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
