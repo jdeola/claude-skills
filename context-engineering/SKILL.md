@@ -323,6 +323,8 @@ Prevent duplicate components:
 ## Bundled Resources
 
 ### Reference Documentation
+> **Usage:** Claude should READ these for detailed guidance, not execute.
+
 - [SESSIONS.md](references/SESSIONS.md) - Detailed session management
 - [MEMORY-LIFECYCLE.md](references/MEMORY-LIFECYCLE.md) - Extraction/consolidation patterns
 - [MCP-INTEGRATIONS.md](references/MCP-INTEGRATIONS.md) - MCP server integration guides
@@ -332,23 +334,35 @@ Prevent duplicate components:
 - [EVALUATION.md](references/EVALUATION.md) - Memory quality metrics
 - [ADVANCED-SCENARIOS.md](references/ADVANCED-SCENARIOS.md) - Multi-project, failure handling
 
-### Hooks (Copy to .claude/hooks/)
-- [session-init.sh](hooks/session-init.sh) - Session startup
-- [duplicate-check.sh](hooks/duplicate-check.sh) - Prevent duplicates
-- [skill-suggester.sh](hooks/skill-suggester.sh) - Auto-suggest skills
-- [pre-commit-guard.sh](hooks/pre-commit-guard.sh) - Impact analysis
+### Hooks (AUTO-TRIGGERED by Claude Code)
+> **Usage:** These run automatically via Claude Code hooks system. Copy to `.claude/hooks/` and configure in `.claude/settings.json`. Claude does NOT invoke these directly.
 
-### Commands (Reference)
-- [start.md](commands/start.md) - Session initialization
-- [done.md](commands/done.md) - Post-implementation
-- [context-hygiene.md](commands/context-hygiene.md) - Context management
-- [impact-map.md](commands/impact-map.md) - Dependency mapping
+| Hook | Trigger Point | Purpose |
+|------|---------------|---------|
+| [session-init.sh](hooks/session-init.sh) | `SessionStart` | Load context, show status |
+| [duplicate-check.sh](hooks/duplicate-check.sh) | `PreToolUse` (write) | Block duplicate components |
+| [skill-suggester.sh](hooks/skill-suggester.sh) | `UserPromptSubmit` | Suggest relevant skills |
+| [pre-commit-guard.sh](hooks/pre-commit-guard.sh) | `PreToolUse` (bash) | Warn about unstaged files |
 
-### Automation Scripts
-- `scripts/context_analyzer.py` - Analyze context usage
-- `scripts/memory_consolidator.py` - Consolidation helper
-- `scripts/session_manager.py` - Session lifecycle
-- `scripts/config_generator.py` - Generate configuration
+### Commands (READ for workflow guidance)
+> **Usage:** Claude should READ these to understand workflow steps, then execute the steps described within.
+
+- [start.md](commands/start.md) - Session initialization workflow
+- [done.md](commands/done.md) - Post-implementation checklist
+- [context-hygiene.md](commands/context-hygiene.md) - Context management steps
+- [impact-map.md](commands/impact-map.md) - Dependency mapping procedure
+
+### Scripts
+
+#### 🔧 EXECUTE - Analysis & Automation Scripts
+> **Usage:** Claude should RUN these scripts to perform analysis or generate outputs.
+
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `context_analyzer.py` | `python3 scripts/context_analyzer.py --doc-dir .` | Analyze context usage metrics |
+| `session_manager.py` | `python3 scripts/session_manager.py handoff --topic "X"` | Generate session handoffs |
+| `config_generator.py` | `python3 scripts/config_generator.py --scan .` | Generate project configs |
+| `memory_consolidator.py` | `python3 scripts/memory_consolidator.py --demo` | Analyze memory for consolidation |
 
 ---
 

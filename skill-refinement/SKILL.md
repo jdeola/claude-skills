@@ -232,20 +232,46 @@ Review tracked patterns and generalization queue. See `commands/review-patterns.
 
 ---
 
-## Hooks
+## Hooks (AUTO-TRIGGERED by Claude Code)
+> **Usage:** These run automatically via Claude Code hooks system. Configure in `.claude/settings.json`. Claude does NOT invoke these directly.
 
-### refinement-detector.sh
-Detects refinement opportunities from user prompts.
+| Hook | Trigger Point | Purpose |
+|------|---------------|---------|
+| `refinement-detector.sh` | `UserPromptSubmit` | Detect refinement keywords in prompts |
+| `session-end.sh` | Session end | Prompt for refinements after significant sessions |
 
-### session-end.sh
-Prompts for refinements after significant sessions.
+---
+
+## Scripts
+
+### 🔧 EXECUTE - Refinement Workflow Scripts
+> **Usage:** Claude should RUN these scripts as part of the refinement workflow.
+
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `gather_context.py` | `python3 scripts/gather_context.py --skill SKILL` | Collect context for analysis |
+| `analyze_gap.py` | `python3 scripts/analyze_gap.py --skill SKILL --expected "..." --actual "..."` | Analyze expected vs actual behavior |
+| `generate_patch.py` | `python3 scripts/generate_patch.py --skill SKILL --section SECTION` | Generate patch files |
+| `log_refinement.py` | `python3 scripts/log_refinement.py --skill SKILL --category CAT` | Log refinement to user-scope |
+| `apply_refinement.py` | `python3 scripts/apply_refinement.py --skill SKILL [--dry-run]` | Apply refinement to project |
+| `aggregate_patterns.py` | `python3 scripts/aggregate_patterns.py --check-all` | Check for generalizable patterns |
+| `sync_zen.py` | `python3 scripts/sync_zen.py --status` | Sync with Zen MCP (when available) |
+
+### 📚 REFERENCE - Shared Modules (Do Not Execute Directly)
+> **Usage:** These are imported by workflow scripts. Claude should NOT run these directly.
+
+| Module | Purpose |
+|--------|---------|
+| `common/models.py` | Data models (Refinement, Pattern, GapAnalysis) |
+| `common/persistence.py` | File-based and Zen MCP persistence layer |
 
 ---
 
 ## References
+> **Usage:** Claude should READ these for detailed syntax and criteria.
 
 - `references/override-types.md` - Detailed override type documentation
-- `references/patch-syntax.md` - Patch action syntax reference
+- `references/patch-syntax.md` - Patch action syntax reference  
 - `references/generalization-criteria.md` - When and how to generalize
 
 ---

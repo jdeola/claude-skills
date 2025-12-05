@@ -119,16 +119,49 @@ For new projects or features, implement proactive monitoring:
 → Run `scripts/data_integrity_check.py`
 → Follow `reference/data-recovery.md`
 
-## Validation & Quality Checks
+## Scripts
 
-- **Pre-deployment:** `scripts/validate_error_coverage.py`
-- **Post-deployment:** `scripts/monitor_deployment.js`
-- **Performance:** `scripts/analyze_performance.js`
-- **Error rates:** `scripts/check_error_thresholds.py`
+### 🔧 EXECUTE - Validation Scripts
+> **Usage:** Claude should RUN these scripts to validate codebase and generate reports.
+
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `validate_error_coverage.py` | `python3 scripts/validate_error_coverage.py --root .` | Scan for error handling gaps |
+| `validate_server_action_errors.py` | `python3 scripts/validate_server_action_errors.py --root .` | Validate Server Action patterns |
+| `validate_react_query_errors.py` | `python3 scripts/validate_react_query_errors.py --root .` | Validate React Query error handling |
+| `triage_error.py` | `python3 scripts/triage_error.py` | Emergency triage for production incidents |
+
+### ⚡ ONE-TIME EXECUTE - Project Setup Scripts
+> **Usage:** Claude should RUN these ONCE per project for initial setup. Not for repeated use.
+
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `setup_error_boundaries.ts` | `npx ts-node scripts/setup_error_boundaries.ts` | Add React error boundaries to app routes |
+
+### 📚 REFERENCE - Shared Modules (Do Not Execute Directly)
+> **Usage:** These are imported by the validation scripts. Claude should NOT run these directly.
+
+| Module | Purpose |
+|--------|---------|
+| `common/config.py` | Project configuration loader |
+| `common/models.py` | Shared data models (Issue, Severity, Report) |
+| `common/base_validator.py` | Base class for validators |
+| `common/cli.py` | CLI argument parsing |
+| `common/output.py` | Report formatting (JSON, Markdown) |
+
+---
 
 ## References
+> **Usage:** Claude should READ these for patterns and guidance.
 
 - `reference/error-patterns.md` - Common error patterns and fixes
 - `reference/sentry-queries.md` - Advanced Sentry query patterns
 - `reference/performance-optimization.md` - Performance tuning guide
-- `reference/incident-response.md` - Incident management procedures
+
+## Templates
+> **Usage:** Claude should READ and FILL IN these templates when generating reports.
+
+- `templates/incident-response.md` - Incident management template
+- `templates/triage-summary.md` - Error triage output format
+- `templates/pattern-doc.md` - Pattern documentation format
+- `templates/validation-summary.md` - Validation report format
