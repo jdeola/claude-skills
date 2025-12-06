@@ -51,6 +51,7 @@
 |-------|---------|-----------------|
 | [context-engineering](context-engineering/SKILL.md) | 2.0.0 | Session/memory management, context hygiene |
 | [error-lifecycle-management](error-lifecycle-management/SKILL.md) | 2.0.0 | Error tracking, validation, incident response |
+| [data-mutation-consistency](data-mutation-consistency/SKILL.md) | 2.0.0 | Enforce mutation patterns (Vercel/Next.js/Supabase) |
 | [skill-refinement](skill-refinement/SKILL.md) | 1.0.0 | Capture and apply skill improvements |
 
 ---
@@ -139,8 +140,18 @@ Documentation Claude should read for guidance, patterns, and workflows.
 3. Extract memories if needed
 ```
 
+### When Dealing with Stale Data / Mutations
+**Skill:** `data-mutation-consistency`
+**Trigger:** "stale data", "not updating", "cache", "mutation", "revalidate"
+```
+1. Run @analyze-mutations for full codebase check
+2. Check mutation scoring (9.0 warning, 7.0 critical)
+3. Verify cache tags ↔ query keys alignment
+4. Generate fix plan with @fix-mutations
+```
+
 ### When Skills Need Improvement
-**Skill:** `skill-refinement` → `/refine-skills`  
+**Skill:** `skill-refinement` → `/refine-skills`
 **Trigger:** "skill should have", "skill missed", "false positive"
 ```
 1. Gather context
@@ -258,6 +269,16 @@ Example `.claude/settings.json`:
 │  │ • Query Sentry (MCP)     • Run validators      │           │
 │  │ • Triage errors          • Track patterns      │           │
 │  │ • Generate fixes         • Monitor deploys     │           │
+│  └──────────┬──────────────────────────────────────┘           │
+│             │                                                   │
+│             │ Stale data issues trigger                         │
+│             ▼                                                   │
+│  ┌─────────────────────────────────────────────────┐           │
+│  │ data-mutation-consistency                       │           │
+│  │                                                 │           │
+│  │ • Score mutations        • Check cache tags    │           │
+│  │ • Validate patterns      • Cross-layer align  │           │
+│  │ • Generate fixes         • React Query/Payload │           │
 │  └─────────────────────────────────────────────────┘           │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -265,8 +286,9 @@ Example `.claude/settings.json`:
 Cross-skill workflows:
 1. Session start → context-engineering loads context
 2. Error detected → error-lifecycle-management handles
-3. Solution found → skill-refinement captures pattern
-4. Session end → context-engineering extracts memories
+3. Stale data issue → data-mutation-consistency analyzes
+4. Solution found → skill-refinement captures pattern
+5. Session end → context-engineering extracts memories
 ```
 
 ---
@@ -296,6 +318,7 @@ Cross-skill workflows:
 │  New session:  context-engineering → /start                     │
 │  New feature:  context-engineering → /impact-map                │
 │  Bug fix:      error-lifecycle-management → triage              │
+│  Stale data:   data-mutation-consistency → @analyze-mutations   │
 │  Commit:       context-engineering → /done                      │
 │  Heavy ctx:    context-engineering → /context-hygiene           │
 │  Skill issue:  skill-refinement → /refine-skills                │

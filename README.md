@@ -8,6 +8,7 @@ Reusable, project-agnostic skills for Claude Code development workflows.
 |-------|---------|-------------|
 | [context-engineering](context-engineering/SKILL.md) | 2.0.0 | Session/memory management, automation hooks, context hygiene |
 | [error-lifecycle-management](error-lifecycle-management/SKILL.md) | 2.0.0 | Error tracking, triage, validation with Sentry integration |
+| [data-mutation-consistency](data-mutation-consistency/SKILL.md) | 2.0.0 | Enforce consistent mutation patterns (Vercel/Next.js/Supabase) |
 | [dev-flow-foundations](dev-flow-foundations/) | 1.0.0 | Foundation documents for advanced workflow patterns |
 
 ## Quick Start
@@ -81,6 +82,24 @@ Production error handling from triage to resolution.
 - `reference/` - Error patterns, Sentry queries
 - `templates/` - Incident response, triage summaries
 
+### data-mutation-consistency
+
+Enforce consistent data mutation patterns across Vercel/Next.js/Supabase stack.
+
+**Features:**
+- Mutation pattern scoring (9.0 warning, 7.0 critical thresholds)
+- Auto-detected sub-skills (React Query, Payload CMS)
+- Cross-layer validation (cache tags ↔ query keys)
+- Sentry integration for stale data detection
+- Zen MCP memory for cross-session awareness
+
+**Key Files:**
+- `SKILL.md` - Main router document
+- `scripts/` - Python analysis and fix generation
+- `hooks/` - Pre-write validation and keyword detection
+- `commands/` - Slash commands (`@analyze-mutations`, `@check-mutation`, `@fix-mutations`)
+- `sub-skills/` - React Query and Payload CMS patterns
+
 ### dev-flow-foundations
 
 Advanced workflow patterns and best practices.
@@ -97,6 +116,7 @@ Advanced workflow patterns and best practices.
 ```
 claude-skills/
 ├── README.md                      # This file
+├── SKILL.md                       # Master orchestrator
 ├── context-engineering/           # Context & session management
 │   ├── SKILL.md
 │   ├── hooks/
@@ -109,6 +129,14 @@ claude-skills/
 │   ├── reference/
 │   ├── templates/
 │   └── reports/
+├── data-mutation-consistency/     # Mutation pattern enforcement
+│   ├── SKILL.md
+│   ├── scripts/
+│   ├── hooks/
+│   ├── commands/
+│   ├── sub-skills/
+│   ├── config/
+│   └── templates/
 └── dev-flow-foundations/          # Foundation documents
     ├── SKILL-dependency-graph-v1.md
     ├── SKILL-component-registry-v1.md
