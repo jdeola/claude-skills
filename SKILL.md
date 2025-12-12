@@ -95,7 +95,7 @@ Documentation Claude should read for guidance, patterns, and workflows.
 ## Skill Selection Guide
 
 ### When Starting a Session
-**Skill:** `context-engineering`  
+**Skill:** `context-engineering` → `/jd:start`
 **Trigger:** Session start, new task, "where were we"
 ```
 → Load project context
@@ -104,7 +104,7 @@ Documentation Claude should read for guidance, patterns, and workflows.
 ```
 
 ### When Implementing Features
-**Skill:** `context-engineering` → `/impact-map`  
+**Skill:** `context-engineering` → `/jd:impact-map`
 **Trigger:** "implement", "create", "build new"
 ```
 1. Map dependencies BEFORE writing code
@@ -123,7 +123,7 @@ Documentation Claude should read for guidance, patterns, and workflows.
 ```
 
 ### When Session Gets Heavy
-**Skill:** `context-engineering` → `/context-hygiene`  
+**Skill:** `context-engineering` → `/jd:context-hygiene`
 **Trigger:** "context heavy", "slow", "confused", >25 messages
 ```
 1. Summarize current state
@@ -132,7 +132,7 @@ Documentation Claude should read for guidance, patterns, and workflows.
 ```
 
 ### When Finishing Work
-**Skill:** `context-engineering` → `/done`  
+**Skill:** `context-engineering` → `/jd:done`
 **Trigger:** "done", "finished", "commit"
 ```
 1. Run validation (build, lint, test)
@@ -144,14 +144,14 @@ Documentation Claude should read for guidance, patterns, and workflows.
 **Skill:** `data-mutation-consistency`
 **Trigger:** "stale data", "not updating", "cache", "mutation", "revalidate"
 ```
-1. Run @analyze-mutations for full codebase check
+1. Run /jd:mutation-analyze for full codebase check
 2. Check mutation scoring (9.0 warning, 7.0 critical)
 3. Verify cache tags ↔ query keys alignment
-4. Generate fix plan with @fix-mutations
+4. Generate fix plan with /jd:mutation-fix
 ```
 
 ### When Skills Need Improvement
-**Skill:** `skill-refinement` → `/refine-skills`
+**Skill:** `skill-refinement` → `/jd:refine-skills`
 **Trigger:** "skill should have", "skill missed", "false positive"
 ```
 1. Gather context
@@ -315,13 +315,13 @@ Cross-skill workflows:
 │                                                                 │
 │  COMMON WORKFLOWS                                               │
 │  ────────────────                                               │
-│  New session:  context-engineering → /start                     │
-│  New feature:  context-engineering → /impact-map                │
+│  New session:  context-engineering → /jd:start                  │
+│  New feature:  context-engineering → /jd:impact-map             │
 │  Bug fix:      error-lifecycle-management → triage              │
-│  Stale data:   data-mutation-consistency → @analyze-mutations   │
-│  Commit:       context-engineering → /done                      │
-│  Heavy ctx:    context-engineering → /context-hygiene           │
-│  Skill issue:  skill-refinement → /refine-skills                │
+│  Stale data:   data-mutation-consistency → /jd:mutation-analyze │
+│  Commit:       context-engineering → /jd:done                   │
+│  Heavy ctx:    context-engineering → /jd:context-hygiene        │
+│  Skill issue:  skill-refinement → /jd:refine-skills             │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
