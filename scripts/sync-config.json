@@ -1,0 +1,46 @@
+{
+  "$schema": "./sync-config.schema.json",
+  "version": "1.0.0",
+  "description": "Configuration for Claude Skills sync targets",
+  
+  "userScope": {
+    "commands": {
+      "enabled": true,
+      "namespace": "skills",
+      "mode": "symlink",
+      "comment": "Change namespace to your preferred prefix (e.g., 'jd', 'myname')"
+    },
+    "hooks": {
+      "enabled": true,
+      "mode": "symlink"
+    },
+    "scripts": {
+      "enabled": false,
+      "mode": "copy"
+    }
+  },
+  
+  "projects": [
+    {
+      "path": "~/path/to/your/project",
+      "namespace": "project",
+      "enabled": false,
+      "syncMode": "copy",
+      "includeHooks": true,
+      "notes": "Example project - update path and enable"
+    }
+  ],
+  
+  "excludePatterns": [
+    "**/__pycache__/**",
+    "**/.DS_Store",
+    "**/node_modules/**"
+  ],
+  
+  "hooks": {
+    "prePush": {
+      "enabled": true,
+      "syncOnPush": true
+    }
+  }
+}

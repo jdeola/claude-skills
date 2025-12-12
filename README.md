@@ -117,6 +117,9 @@ Advanced workflow patterns and best practices.
 claude-skills/
 ├── README.md                      # This file
 ├── SKILL.md                       # Master orchestrator
+├── scripts/                       # Sync system
+│   ├── sync-skills.sh             # Main sync script
+│   └── sync-config.json           # Sync configuration
 ├── context-engineering/           # Context & session management
 │   ├── SKILL.md
 │   ├── hooks/
@@ -153,21 +156,124 @@ claude-skills/
 4. **MCP-Integrated**: First-class support for MCP servers
 5. **Automation-Ready**: Hooks and scripts for workflow automation
 
+## Syncing Skills
+
+The repository includes a sync system that automatically distributes skills to your Claude Code configuration when you push to GitHub.
+
+### How It Works
+
+```
+git push origin main
+       │
+       ▼
+┌──────────────────────────────┐
+│  .git/hooks/pre-push         │
+│  (triggers sync)             │
+└──────────────────────────────┘
+       │
+       ▼
+┌──────────────────────────────┐
+│  scripts/sync-skills.sh      │
+├──────────────────────────────┤
+│  • Symlinks → ~/.claude/     │
+│  • Copies → project/.claude/ │
+└──────────────────────────────┘
+       │
+       ▼
+   Push continues
+```
+
+### Setup
+
+1. **Clone the repository** to your preferred location
+2. **Configure sync targets** in `scripts/sync-config.json`
+3. **Run initial sync**: `./scripts/sync-skills.sh`
+4. **Push changes** - sync runs automatically via pre-push hook
+
+### Configuration
+
+Edit `scripts/sync-config.json` to register your projects:
+
+```json
+{
+  "userScope": {
+    "commands": { "enabled": true, "namespace": "skills", "mode": "symlink" },
+    "hooks": { "enabled": true, "mode": "symlink" }
+  },
+  "projects": [
+    {
+      "path": "~/path/to/your/project",
+      "namespace": "myproject",
+      "enabled": true
+    }
+  ]
+}
+```
+
+### Sync Modes
+
+| Target | Method | Behavior |
+|--------|--------|----------|
+| User scope (`~/.claude/`) | Symlinks | Changes propagate immediately |
+| Project scope | Copies | Isolated snapshots per project |
+
+### Manual Sync
+
+```bash
+# Preview changes
+./scripts/sync-skills.sh --dry-run
+
+# Full sync
+./scripts/sync-skills.sh
+
+# User-level only (symlinks to ~/.claude/)
+./scripts/sync-skills.sh --user-only
+
+# Projects only (copies to registered projects)
+./scripts/sync-skills.sh --projects-only
+```
+
+### Available Commands After Sync
+
+Commands are installed to the namespace you configure (default examples shown):
+
+| Command | Skill | Description |
+|---------|-------|-------------|
+| `/namespace:start` | context-engineering | Initialize development session |
+| `/namespace:done` | context-engineering | Post-implementation validation |
+| `/namespace:impact-map` | context-engineering | Pre-implementation dependency analysis |
+| `/namespace:context-hygiene` | context-engineering | Context window management |
+| `/namespace:mutation-analyze` | data-mutation-consistency | Full codebase mutation analysis |
+| `/namespace:mutation-check` | data-mutation-consistency | Single file mutation check |
+| `/namespace:mutation-fix` | data-mutation-consistency | Generate fix plan |
+| `/namespace:refine-skills` | skill-refinement | Capture skill improvements |
+| `/namespace:review-patterns` | skill-refinement | Review tracked patterns |
+| `/namespace:apply-generalization` | skill-refinement | Promote to user scope |
+
+> **Note**: Replace `namespace` with your configured value in `sync-config.json`.
+
 ## Creating New Skills
 
 Use the skill-creator pattern:
 
 ```bash
 # Initialize new skill structure
-python /path/to/skill-creator/init_skill.py my-new-skill
+mkdir my-new-skill
+cd my-new-skill
 
-# Develop and test
+# Create standard structure
+mkdir -p commands hooks references scripts templates
 
-# Package for distribution
-python /path/to/skill-creator/package_skill.py my-new-skill
+# Create main SKILL.md router
+touch SKILL.md
 ```
 
 ## Version History
 
+- **2.1.0** (2025-12): Added sync system with pre-push hook automation
 - **2.0.0** (2024-12): Generalized skills, added hooks/commands, config system
 - **1.0.0** (2024-11): Initial extraction from VBA project
+
+## License
+
+MIT License - See LICENSE file for details.
