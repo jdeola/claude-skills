@@ -46,7 +46,7 @@ Enforces consistent data mutation patterns across Next.js applications deployed 
 | [react-query-mutations](./sub-skills/react-query-mutations.md) | Project uses TanStack Query / React Query | `@tanstack/react-query` in package.json |
 | [payload-cms-hooks](./sub-skills/payload-cms-hooks.md) | Project uses Payload CMS | `payload` in package.json |
 | redux-toolkit-mutations | Project uses RTK Query | `@reduxjs/toolkit` (planned) |
-| sanity-cms-hooks | Project uses Sanity CMS | `@sanity/client` (planned) |
+| [sanity-cms-hooks](./sub-skills/sanity-cms-hooks.md) | Project uses Sanity CMS | `@sanity/client` in package.json |
 
 Sub-skills are auto-detected from `package.json` by default. Override in project config if needed.
 
@@ -460,7 +460,7 @@ claude-skill-data-mutation-consistency/
 │  • react-query-mutations - TanStack Query patterns              │
 │  • payload-cms-hooks - Payload CMS lifecycle hooks              │
 │  • redux-toolkit-mutations - RTK Query (planned)                │
-│  • sanity-cms-hooks - Sanity CMS (planned)                      │
+│  • sanity-cms-hooks - Sanity CMS                                │
 ├─────────────────────────────────────────────────────────────────┤
 │  ENFORCEMENT: Advisory (warn + TODO, don't block)               │
 │  THRESHOLD: < 9.0 = warning, < 7.0 = critical                   │
